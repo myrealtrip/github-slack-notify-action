@@ -20249,13 +20249,6 @@ function sendGithubPullRequestOpenMessage({ pullRequest: { link, title, body }, 
                     text: `*${body}* > <${link}|${title}> 풀리퀘스트에 새로운 댓글이 달렸어요`,
                 },
             },
-            // {
-            //   type: "section",
-            //   text: {
-            //     type: "mrkdwn",
-            //     text: await replaceGithubUserToSlackUserInString(comment.message),
-            //   },
-            // },
         ];
         return sendMessage({
             channel: input_1.TARGET_SLACK_CHANNEL_ID,
