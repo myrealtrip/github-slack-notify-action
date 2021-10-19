@@ -1,28 +1,31 @@
 import { ChatPostMessageArguments, WebClient } from "@slack/web-api";
 import { SLACK_BOT_TOKEN, TARGET_SLACK_CHANNEL_ID } from "./input";
 import { GithubPullRequest } from "../models/github";
-
-console.log("SLACK_BOT_TOKEN", SLACK_BOT_TOKEN);
+import { canaryBodyParser } from "./canaryBodyParser";
 
 const slackClient = new WebClient(SLACK_BOT_TOKEN);
 
 export function sendMessage(args: ChatPostMessageArguments) {
   console.log("🎉", args);
-
   return slackClient.chat.postMessage(args);
 }
 
-export async function sendGithubPullRequestOpenMessage({
+export async function sendCanaryPublishMessage({
   pullRequest: { link, title, body },
 }: {
   pullRequest: GithubPullRequest;
 }) {
+  const header = ":sparkles: 다음을 통해 PR을 테스트:\n";
+
+  const content = canaryBodyParser(body);
   const blocks = [
     {
       type: "section",
       text: {
         type: "mrkdwn",
-        text: `*${body}* > <${link}|${title}> 풀리퀘스트에 새로운 댓글이 달렸어요`,
+        text: `*${
+          header + "\n" + content
+        }* > <${link}|${title}> 풀리퀘스트에 카나리 배포가 되었어요!`,
       },
     },
   ];
