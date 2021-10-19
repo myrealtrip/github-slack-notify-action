@@ -6,7 +6,6 @@ import { canaryBodyParser } from "./canaryBodyParser";
 const slackClient = new WebClient(SLACK_BOT_TOKEN);
 
 export function sendMessage(args: ChatPostMessageArguments) {
-  console.log("🎉", args);
   return slackClient.chat.postMessage(args);
 }
 
@@ -15,9 +14,10 @@ export async function sendCanaryPublishMessage({
 }: {
   pullRequest: GithubPullRequest;
 }) {
-  const header = ":sparkles: 다음을 통해 PR을 테스트:\n";
+  const header = ":sparkles: 다음을 통해 PR 로컬 테스트:\n";
 
   const content = canaryBodyParser(body);
+
   const blocks = [
     {
       type: "section",
@@ -26,6 +26,28 @@ export async function sendCanaryPublishMessage({
         text: `*${
           header + "\n" + content
         }* > <${link}|${title}> 풀리퀘스트에 카나리 배포가 되었어요!`,
+      },
+    },
+  ];
+
+  return sendMessage({
+    channel: TARGET_SLACK_CHANNEL_ID,
+    text: "",
+    blocks,
+  });
+}
+
+export async function sendPlaneTextMessage({
+  planeText,
+}: {
+  planeText: string;
+}) {
+  const blocks = [
+    {
+      type: "section",
+      text: {
+        type: "mrkdwn",
+        text: `${planeText}`,
       },
     },
   ];

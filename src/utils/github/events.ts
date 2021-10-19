@@ -1,5 +1,5 @@
 import * as github from "@actions/github";
-import { GithubActionEvent, GithubActionEventName } from "models/github";
+import { ActionEventName } from "models/github";
 import { BUILD_TYPE } from "utils/input";
 
 function isReadyCanaryBuild() {
@@ -20,14 +20,18 @@ function isApprovedCodeReview() {
   );
 }
 
-export function parseGithubEvent(): GithubActionEvent | null {
+export function parseGithubEvent() {
   if (isReadyCanaryBuild()) {
     return {
-      type: GithubActionEventName.카나리,
+      type: ActionEventName.카나리,
     };
   } else if (isApprovedCodeReview()) {
     return {
-      type: GithubActionEventName.PR승인,
+      type: ActionEventName.PR승인,
+    };
+  } else {
+    return {
+      type: ActionEventName.입력,
     };
   }
 

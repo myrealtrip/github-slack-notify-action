@@ -20180,15 +20180,102 @@ function wrappy (fn, cb) {
 
 /***/ }),
 
+/***/ 6962:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.ActionEventName = void 0;
+var ActionEventName;
+(function (ActionEventName) {
+    ActionEventName["\uCE74\uB098\uB9AC"] = "CREATED_CANARY";
+    ActionEventName["PR\uC2B9\uC778"] = "APPROVED_PULL_REQUEST";
+    ActionEventName["\uC785\uB825"] = "INPUT_PLANE_TEXT";
+})(ActionEventName = exports.ActionEventName || (exports.ActionEventName = {}));
+
+
+/***/ }),
+
+/***/ 116:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.canaryBodyParser = void 0;
+function canaryBodyParser(body) {
+    console.log("RPEV", body);
+    const regex = /```bash.*?```/s;
+    const parse = body.match(regex);
+    if (!parse)
+        return null;
+    const result = parse[0].replace("bash", "").replace(/  /gi, "");
+    return result;
+}
+exports.canaryBodyParser = canaryBodyParser;
+
+
+/***/ }),
+
+/***/ 4232:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.parseGithubEvent = void 0;
+const tslib_1 = __nccwpck_require__(4351);
+const github = (0, tslib_1.__importStar)(__nccwpck_require__(5438));
+const github_1 = __nccwpck_require__(6962);
+const input_1 = __nccwpck_require__(5073);
+function isReadyCanaryBuild() {
+    const { eventName } = github.context;
+    const isPullReqeustEvent = eventName === "pull_request";
+    const isReadyForCanary = input_1.BUILD_TYPE === "canary";
+    return isPullReqeustEvent && isReadyForCanary;
+}
+function isApprovedCodeReview() {
+    const { eventName, payload } = github.context;
+    const isReviewEvent = eventName === "pull_request_review";
+    return (isReviewEvent &&
+        payload.action === "submitted" &&
+        payload.review.state === "approved");
+}
+function parseGithubEvent() {
+    if (isReadyCanaryBuild()) {
+        return {
+            type: github_1.ActionEventName.카나리,
+        };
+    }
+    else if (isApprovedCodeReview()) {
+        return {
+            type: github_1.ActionEventName.PR승인,
+        };
+    }
+    else {
+        return {
+            type: github_1.ActionEventName.입력,
+        };
+    }
+    return null;
+}
+exports.parseGithubEvent = parseGithubEvent;
+
+
+/***/ }),
+
 /***/ 5073:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.GITHUB_TOKEN = exports.TARGET_SLACK_CHANNEL_ID = exports.SLACK_BOT_TOKEN = void 0;
+exports.GITHUB_TOKEN = exports.TARGET_SLACK_CHANNEL_ID = exports.SLACK_BOT_TOKEN = exports.PLANE_TEXT = exports.BUILD_TYPE = void 0;
 const tslib_1 = __nccwpck_require__(4351);
 const core = (0, tslib_1.__importStar)(__nccwpck_require__(2186));
+exports.BUILD_TYPE = core.getInput("build-type");
+exports.PLANE_TEXT = core.getInput("plane-text");
 exports.SLACK_BOT_TOKEN = core.getInput("slack-bot-token");
 exports.TARGET_SLACK_CHANNEL_ID = core.getInput("channel-id");
 exports.GITHUB_TOKEN = core.getInput("github-token");
@@ -20205,17 +20292,14 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.getPullRequest = void 0;
 const tslib_1 = __nccwpck_require__(4351);
 const github = (0, tslib_1.__importStar)(__nccwpck_require__(5438));
-function getPullRequest() {
-    var _a, _b, _c;
-    return (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
-        const { pull_request } = github.context.payload;
-        console.log("🎇", pull_request);
-        return {
-            title: ((_a = pull_request === null || pull_request === void 0 ? void 0 : pull_request.title) !== null && _a !== void 0 ? _a : ""),
-            body: (_b = pull_request === null || pull_request === void 0 ? void 0 : pull_request.body) !== null && _b !== void 0 ? _b : "",
-            link: ((_c = pull_request === null || pull_request === void 0 ? void 0 : pull_request._links.html.href) !== null && _c !== void 0 ? _c : ""),
-        };
-    });
+async function getPullRequest() {
+    const { pull_request } = github.context.payload;
+    console.log("🎇", pull_request);
+    return {
+        title: (pull_request?.title ?? ""),
+        body: pull_request?.body ?? "",
+        link: (pull_request?._links.html.href ?? ""),
+    };
 }
 exports.getPullRequest = getPullRequest;
 
@@ -20228,36 +20312,51 @@ exports.getPullRequest = getPullRequest;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.sendGithubPullRequestOpenMessage = exports.sendMessage = void 0;
-const tslib_1 = __nccwpck_require__(4351);
+exports.sendPlaneTextMessage = exports.sendCanaryPublishMessage = exports.sendMessage = void 0;
 const web_api_1 = __nccwpck_require__(431);
 const input_1 = __nccwpck_require__(5073);
-console.log("SLACK_BOT_TOKEN", input_1.SLACK_BOT_TOKEN);
+const canaryBodyParser_1 = __nccwpck_require__(116);
 const slackClient = new web_api_1.WebClient(input_1.SLACK_BOT_TOKEN);
 function sendMessage(args) {
-    console.log("🎉", args);
     return slackClient.chat.postMessage(args);
 }
 exports.sendMessage = sendMessage;
-function sendGithubPullRequestOpenMessage({ pullRequest: { link, title, body }, }) {
-    return (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
-        const blocks = [
-            {
-                type: "section",
-                text: {
-                    type: "mrkdwn",
-                    text: `*${body}* > <${link}|${title}> 풀리퀘스트에 새로운 댓글이 달렸어요`,
-                },
+async function sendCanaryPublishMessage({ pullRequest: { link, title, body }, }) {
+    const header = ":sparkles: 다음을 통해 PR 로컬 테스트:\n";
+    const content = (0, canaryBodyParser_1.canaryBodyParser)(body);
+    const blocks = [
+        {
+            type: "section",
+            text: {
+                type: "mrkdwn",
+                text: `*${header + "\n" + content}* > <${link}|${title}> 풀리퀘스트에 카나리 배포가 되었어요!`,
             },
-        ];
-        return sendMessage({
-            channel: input_1.TARGET_SLACK_CHANNEL_ID,
-            text: "",
-            blocks,
-        });
+        },
+    ];
+    return sendMessage({
+        channel: input_1.TARGET_SLACK_CHANNEL_ID,
+        text: "",
+        blocks,
     });
 }
-exports.sendGithubPullRequestOpenMessage = sendGithubPullRequestOpenMessage;
+exports.sendCanaryPublishMessage = sendCanaryPublishMessage;
+async function sendPlaneTextMessage({ planeText, }) {
+    const blocks = [
+        {
+            type: "section",
+            text: {
+                type: "mrkdwn",
+                text: `${planeText}`,
+            },
+        },
+    ];
+    return sendMessage({
+        channel: input_1.TARGET_SLACK_CHANNEL_ID,
+        text: "",
+        blocks,
+    });
+}
+exports.sendPlaneTextMessage = sendPlaneTextMessage;
 
 
 /***/ }),
@@ -20544,19 +20643,41 @@ const core = (0, tslib_1.__importStar)(__nccwpck_require__(2186));
 const github = (0, tslib_1.__importStar)(__nccwpck_require__(5438));
 const slack_1 = __nccwpck_require__(806);
 const pullRequest_1 = __nccwpck_require__(7209);
+const events_1 = __nccwpck_require__(4232);
+const github_1 = __nccwpck_require__(6962);
+const input_1 = __nccwpck_require__(5073);
 const { eventName, payload } = github.context;
-function main() {
-    return (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
-        core.info("🔥 Run.....");
-        core.info(`eventName = ${eventName}`);
-        core.info("🔥 🔥 🔥 🔥 🔥");
-        core.info(`action = ${payload.action}`);
-        core.info("🔥 🔥 🔥 🔥 🔥");
-        const pullRequest = yield (0, pullRequest_1.getPullRequest)();
-        core.info("Pull Request 오픈, 슬랙 메세지를 보냅니다.");
-        yield (0, slack_1.sendGithubPullRequestOpenMessage)({ pullRequest });
-        core.info("👋 Done!");
-    });
+async function main() {
+    core.info("🔥 Run.....");
+    core.info(`eventName = ${eventName}`);
+    core.info("🔥 🔥 🔥 🔥 🔥");
+    core.info(`action = ${payload.action}`);
+    core.info("🔥 🔥 🔥 🔥 🔥");
+    const pullRequest = await (0, pullRequest_1.getPullRequest)();
+    const githubEvent = (0, events_1.parseGithubEvent)();
+    const planeText = input_1.PLANE_TEXT;
+    if (!githubEvent) {
+        core.info("👋 타입이 없습니다.");
+        return;
+    }
+    switch (githubEvent.type) {
+        case github_1.ActionEventName.카나리: {
+            core.info("카나리 배포가 되었습니다, 슬랙 메세지를 보냅니다.");
+            await (0, slack_1.sendCanaryPublishMessage)({ pullRequest });
+            break;
+        }
+        case github_1.ActionEventName.PR승인: {
+            core.info("Pull Request 승인이 감지되었습니다. 슬랙 메세지를 보냅니다.");
+            await (0, slack_1.sendCanaryPublishMessage)({ pullRequest });
+            break;
+        }
+        case github_1.ActionEventName.입력: {
+            core.info("액션에서 입력 값을 받았습니다.");
+            await (0, slack_1.sendPlaneTextMessage)({ planeText });
+            break;
+        }
+    }
+    core.info("👋 Done!");
 }
 try {
     main();
