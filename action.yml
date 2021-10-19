@@ -1,4 +1,4 @@
-name: "Myrealtrrip Slack Notify"
+name: "Myrealtrip Slack Notify"
 description: "마리트 내에서 사용되는 깃허브 PR 노티피케이션 액션입니다"
 branding:
   color: blue
