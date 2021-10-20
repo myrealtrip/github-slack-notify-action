@@ -20205,7 +20205,6 @@ var ActionEventName;
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.canaryBodyParser = void 0;
 function canaryBodyParser(body) {
-    console.log("RPEV", body);
     const regex = /```bash.*?```/s;
     const parse = body.match(regex);
     if (!parse)
@@ -20231,8 +20230,9 @@ const github_1 = __nccwpck_require__(6962);
 const input_1 = __nccwpck_require__(5073);
 function isReadyCanaryBuild() {
     const { eventName } = github.context;
-    const isPullReqeustEvent = eventName === "pull_request";
+    const isPullReqeustEvent = eventName === "issue_comment";
     const isReadyForCanary = input_1.BUILD_TYPE === "canary";
+    console.log(eventName, input_1.BUILD_TYPE);
     return isPullReqeustEvent && isReadyForCanary;
 }
 function isApprovedCodeReview() {
@@ -20241,6 +20241,9 @@ function isApprovedCodeReview() {
     return (isReviewEvent &&
         payload.action === "submitted" &&
         payload.review.state === "approved");
+}
+function hasPlaneText() {
+    return input_1.PLANE_TEXT;
 }
 function parseGithubEvent() {
     if (isReadyCanaryBuild()) {
@@ -20253,7 +20256,7 @@ function parseGithubEvent() {
             type: github_1.ActionEventName.PR승인,
         };
     }
-    else {
+    else if (hasPlaneText()) {
         return {
             type: github_1.ActionEventName.입력,
         };
@@ -20261,6 +20264,42 @@ function parseGithubEvent() {
     return null;
 }
 exports.parseGithubEvent = parseGithubEvent;
+
+
+/***/ }),
+
+/***/ 957:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.getComment = exports.getPullRequest = void 0;
+const tslib_1 = __nccwpck_require__(4351);
+const github = (0, tslib_1.__importStar)(__nccwpck_require__(5438));
+function getPullRequest() {
+    var _a, _b, _c;
+    return (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
+        const { pull_request } = github.context.payload;
+        return {
+            title: ((_a = pull_request === null || pull_request === void 0 ? void 0 : pull_request.title) !== null && _a !== void 0 ? _a : ""),
+            body: (_b = pull_request === null || pull_request === void 0 ? void 0 : pull_request.body) !== null && _b !== void 0 ? _b : "",
+            link: ((_c = pull_request === null || pull_request === void 0 ? void 0 : pull_request._links.html.href) !== null && _c !== void 0 ? _c : ""),
+        };
+    });
+}
+exports.getPullRequest = getPullRequest;
+function getComment() {
+    var _a, _b;
+    return (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
+        const { comment } = github.context.payload;
+        return {
+            body: (_a = comment === null || comment === void 0 ? void 0 : comment.body) !== null && _a !== void 0 ? _a : "",
+            link: ((_b = comment === null || comment === void 0 ? void 0 : comment.html_url) !== null && _b !== void 0 ? _b : ""),
+        };
+    });
+}
+exports.getComment = getComment;
 
 
 /***/ }),
@@ -20283,32 +20322,6 @@ exports.GITHUB_TOKEN = core.getInput("github-token");
 
 /***/ }),
 
-/***/ 7209:
-/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.getPullRequest = void 0;
-const tslib_1 = __nccwpck_require__(4351);
-const github = (0, tslib_1.__importStar)(__nccwpck_require__(5438));
-function getPullRequest() {
-    var _a, _b, _c;
-    return (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
-        const { pull_request } = github.context.payload;
-        console.log("🎇", pull_request);
-        return {
-            title: ((_a = pull_request === null || pull_request === void 0 ? void 0 : pull_request.title) !== null && _a !== void 0 ? _a : ""),
-            body: (_b = pull_request === null || pull_request === void 0 ? void 0 : pull_request.body) !== null && _b !== void 0 ? _b : "",
-            link: ((_c = pull_request === null || pull_request === void 0 ? void 0 : pull_request._links.html.href) !== null && _c !== void 0 ? _c : ""),
-        };
-    });
-}
-exports.getPullRequest = getPullRequest;
-
-
-/***/ }),
-
 /***/ 806:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
@@ -20325,16 +20338,17 @@ function sendMessage(args) {
     return slackClient.chat.postMessage(args);
 }
 exports.sendMessage = sendMessage;
-function sendCanaryPublishMessage({ pullRequest: { link, title, body }, }) {
+function sendCanaryPublishMessage({ comment: { link, body }, }) {
     return (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
         const header = ":sparkles: 다음을 통해 PR 로컬 테스트:\n";
         const content = (0, canaryBodyParser_1.canaryBodyParser)(body);
+        console.log("content", content);
         const blocks = [
             {
                 type: "section",
                 text: {
                     type: "mrkdwn",
-                    text: `*${header + "\n" + content}* > <${link}|${title}> 풀리퀘스트에 카나리 배포가 되었어요!`,
+                    text: `*${header + "\n" + content + "\n"}  :point_right: <${link}|Link> 풀리퀘스트에 카나리 배포가 되었어요!`,
                 },
             },
         ];
@@ -20650,7 +20664,7 @@ const tslib_1 = __nccwpck_require__(4351);
 const core = (0, tslib_1.__importStar)(__nccwpck_require__(2186));
 const github = (0, tslib_1.__importStar)(__nccwpck_require__(5438));
 const slack_1 = __nccwpck_require__(806);
-const pullRequest_1 = __nccwpck_require__(7209);
+const getPayload_1 = __nccwpck_require__(957);
 const events_1 = __nccwpck_require__(4232);
 const github_1 = __nccwpck_require__(6962);
 const input_1 = __nccwpck_require__(5073);
@@ -20662,22 +20676,23 @@ function main() {
         core.info("🔥 🔥 🔥 🔥 🔥");
         core.info(`action = ${payload.action}`);
         core.info("🔥 🔥 🔥 🔥 🔥");
-        const pullRequest = yield (0, pullRequest_1.getPullRequest)();
+        const comment = yield (0, getPayload_1.getComment)();
         const githubEvent = (0, events_1.parseGithubEvent)();
         const planeText = input_1.PLANE_TEXT;
         if (!githubEvent) {
             core.info("👋 타입이 없습니다.");
             return;
         }
+        console.log("@@comment@@", comment);
         switch (githubEvent.type) {
             case github_1.ActionEventName.카나리: {
                 core.info("카나리 배포가 되었습니다, 슬랙 메세지를 보냅니다.");
-                yield (0, slack_1.sendCanaryPublishMessage)({ pullRequest });
+                yield (0, slack_1.sendCanaryPublishMessage)({ comment });
                 break;
             }
             case github_1.ActionEventName.PR승인: {
                 core.info("Pull Request 승인이 감지되었습니다. 슬랙 메세지를 보냅니다.");
-                yield (0, slack_1.sendCanaryPublishMessage)({ pullRequest });
+                // await sendCanaryPublishMessage({ pullRequest });
                 break;
             }
             case github_1.ActionEventName.입력: {

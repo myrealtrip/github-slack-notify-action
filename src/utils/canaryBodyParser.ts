@@ -1,6 +1,4 @@
 export function canaryBodyParser(body: string) {
-  console.log("RPEV", body);
-
   const regex = /```bash.*?```/s;
   const parse = body.match(regex);
 
