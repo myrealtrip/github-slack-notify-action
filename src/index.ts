@@ -24,8 +24,6 @@ async function main() {
     return;
   }
 
-  console.log("@@comment@@", comment);
-
   switch (githubEvent.type) {
     case ActionEventName.카나리: {
       core.info("카나리 배포가 되었습니다, 슬랙 메세지를 보냅니다.");

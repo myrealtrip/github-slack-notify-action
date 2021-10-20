@@ -17,7 +17,6 @@ export async function sendCanaryPublishMessage({
   const header = ":sparkles: 다음을 통해 PR 로컬 테스트:\n";
 
   const content = canaryBodyParser(body);
-  console.log("content", content);
 
   const blocks = [
     {
