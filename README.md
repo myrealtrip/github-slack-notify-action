@@ -55,26 +55,37 @@ jobs:
       - name: Checkout
         uses: actions/checkout@master
       - name: Fire Notification
-        uses: myrealtrip/github-slack-notify-action@v1.2.0
+        uses: myrealtrip/github-slack-notify-action@latest
         with:
+          plane-text: Hello Myrealtrip!
           slack-bot-token: ${{ secrets.SLACK_BOT_TOKEN }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           channel-id: "my-slack-channel-id"
 ```
 
-| 이름              | 설명                                                                |
-| ----------------- | ------------------------------------------------------------------- |
-| `slack-bot-token` | 메세지를 보낼 슬랙봇 토큰.                                          |
-| `github-token`    | Github Personal Access Token. `repo` 스코프를 지정해서 생성해주세요 |
-| `channel-id`      | 노티를 쏘고 싶은 슬랙 채널 ID                                       |
+| 이름              | 설명                                                                | 옵션 |
+| ----------------- | ------------------------------------------------------------------- | ---- |
+| `slack-bot-token` | 메세지를 보낼 슬랙봇 토큰.                                          | 필수 |
+| `github-token`    | Github Personal Access Token. `repo` 스코프를 지정해서 생성해주세요 | 필수 |
+| `channel-id`      | 노티를 쏘고 싶은 슬랙 채널 ID                                       | 필수 |
+| `build-type`      | canary (커스텀 해서 추가 가능)                                      | 선택 |
+| `plane-text`      | 슬랙 채널에 보낼 평문 메세지(마크다운 작성 가능)                    | 선택 |
 
 ## 🚀 Deployment <a name = "deployment"></a>
 
-writing...
+- 앵귤러 커밋 가이드를 따라 자동으로 버저닝 되고, 이 때 버저닝은 시멘틱버전을 따릅니다.
+- master 브랜치의 최근 커밋을 타입을 따릅니다.
+- **yarn build** 를 통해 **dist** 파일과 함께 업스트림에 푸쉬 해주세요
+
+  ```bash
+  $ yarn build
+  ```
+
+- 최신 태그를 마켓 플레이스에 등록 해주세요
 
 ## ⛏️ Built Using <a name = "built_using"></a>
 
-- [@actions/core](https://www.npmjs.com/package/@actions/core) - 깃헙액션
+- [@actions/core](https://www.npmjs.com/package/@actions/core) - 깃헙 액션
 - [@actions/github](https://www.npmjs.com/package/@actions/github) - 깃헙 이벤트
 - [@slack/web-api](https://www.npmjs.com/package/@slack/web-api) - 슬랙
 - [@vercel/ncc](https://www.npmjs.com/package/@vercel/ncc) - 번들러
