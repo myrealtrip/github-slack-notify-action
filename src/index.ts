@@ -1,7 +1,6 @@
 import * as core from "@actions/core";
 import * as github from "@actions/github";
 import { sendCanaryPublishMessage, sendPlaneTextMessage } from "./utils/slack";
-import { getComment } from "./utils/github/getPayload";
 import { parseGithubEvent } from "./utils/github/events";
 import { ActionEventName } from "./models/github";
 import { PLANE_TEXT } from "./utils/input";
@@ -15,7 +14,6 @@ async function main() {
   core.info(`action = ${payload.action}`);
   core.info("🔥 🔥 🔥 🔥 🔥");
 
-  const comment = await getComment();
   const githubEvent = parseGithubEvent();
   const planeText = PLANE_TEXT;
 
@@ -27,7 +25,7 @@ async function main() {
   switch (githubEvent.type) {
     case ActionEventName.카나리: {
       core.info("카나리 배포가 되었습니다, 슬랙 메세지를 보냅니다.");
-      await sendCanaryPublishMessage({ comment });
+      await sendCanaryPublishMessage(planeText);
       break;
     }
     case ActionEventName.PR승인: {
