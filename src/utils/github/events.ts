@@ -3,11 +3,9 @@ import { ActionEventName } from "models/github";
 import { BUILD_TYPE, PLANE_TEXT } from "utils/input";
 
 function isReadyCanaryBuild() {
-  const { eventName } = github.context;
-  const isPullReqeustEvent = eventName === "issue_comment";
   const isReadyForCanary = BUILD_TYPE === "canary";
 
-  return isPullReqeustEvent && isReadyForCanary;
+  return isReadyForCanary;
 }
 
 function isApprovedCodeReview() {
