@@ -22,7 +22,7 @@ export function parseCanaryVersion(body: string) {
 
   const version = versionNote.substr(startIndex, endIndex);
 
-  const markdown = `\`\`\`sh npm install ${PACKAGE_NAME}@${version}\n\n yarn add ${PACKAGE_NAME}@${version}\`\`\``;
+  const markdown = `\`\`\`// npm\nnpm install ${PACKAGE_NAME}@${version}\n\n// yarn\nyarn add ${PACKAGE_NAME}@${version}\`\`\``;
 
   return markdown;
 }
