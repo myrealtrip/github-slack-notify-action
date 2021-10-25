@@ -13,7 +13,6 @@ export function parseCanaryVersion(body: string) {
     start: "version: ",
     end: " Done",
   };
-  // 26 ~ 51
   const versionNote = parse[0];
 
   const startIndex = findStringLastIndex(versionNote, matchString.start);

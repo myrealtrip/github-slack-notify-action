@@ -73,7 +73,57 @@ jobs:
 
 ## 🚀 Deployment <a name = "deployment"></a>
 
-- 앵귤러 커밋 가이드를 따라 자동으로 버저닝 되고, 이 때 버저닝은 시멘틱버전을 따릅니다.
+- 앵귤러 커밋 가이드를 따라 시멘팅 버저닝과 매핑 되어 자동으로 버전이 상승합니다.
+
+  ```json
+  [
+    {
+      "release": "minor",
+      "type": "feat"
+    },
+    {
+      "release": "patch",
+      "type": "fix"
+    },
+    {
+      "release": "patch",
+      "type": "chore"
+    },
+    {
+      "release": "patch",
+      "type": "docs"
+    },
+    {
+      "release": "patch",
+      "type": "style"
+    },
+    {
+      "release": "patch",
+      "type": "refactor"
+    },
+    {
+      "release": "patch",
+      "type": "perf"
+    },
+    {
+      "release": "patch",
+      "type": "test"
+    },
+    {
+      "release": "minor",
+      "type": "build"
+    },
+    {
+      "release": "patch",
+      "type": "ci"
+    },
+    {
+      "release": "minor",
+      "type": "revert"
+    }
+  ]
+  ```
+
 - master 브랜치의 최근 커밋을 타입을 따릅니다.
 - **yarn build** 를 통해 **dist** 파일과 함께 업스트림에 푸쉬 해주세요
 
