@@ -23,7 +23,12 @@ async function main() {
   }
 
   switch (githubEvent.type) {
-    case ActionEventName.카나리: {
+    case ActionEventName.디자인시스템카나리: {
+      core.info("카나리 배포가 되었습니다, 슬랙 메세지를 보냅니다.");
+      await sendCanaryPublishMessage(planeText);
+      break;
+    }
+    case ActionEventName.디자인시스템운영: {
       core.info("카나리 배포가 되었습니다, 슬랙 메세지를 보냅니다.");
       await sendCanaryPublishMessage(planeText);
       break;
