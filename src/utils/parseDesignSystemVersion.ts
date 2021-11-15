@@ -16,10 +16,9 @@ export function parseCanaryVersion(value: string) {
   const versionNote = parse[0];
 
   const startIndex = findStringLastIndex(versionNote, matchString.start);
-  const endIndex =
-    findStringLastIndex(versionNote, matchString.end) - startIndex;
+  const endIndex = findStringLastIndex(versionNote, matchString.end);
 
-  const version = versionNote.substr(startIndex, endIndex);
+  const version = versionNote.substr(startIndex, endIndex).replace(" Done", "");
 
   const markdown = `\`\`\`// npm\nnpm install ${PACKAGE_NAME}@${version}\n\n// yarn\nyarn add ${PACKAGE_NAME}@${version}\`\`\``;
 
