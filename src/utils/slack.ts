@@ -37,7 +37,7 @@ export async function sendCanaryPublishMessage(planeText: string) {
 }
 
 export async function sendProductionPublishMessage(planeText: string) {
-  const header = ":sparkles: 다음을 통해 설치:\n";
+  const header = ":fire: 운영 배포가 되었어요!\n";
 
   const content = parseProductionVersion(planeText);
   console.log("content", content);
@@ -47,9 +47,7 @@ export async function sendProductionPublishMessage(planeText: string) {
       type: "section",
       text: {
         type: "mrkdwn",
-        text: `*${
-          header + "\n" + content + "\n"
-        }  :fire: 운영 배포가 되었어요!`,
+        text: `*${header + "\n" + content}`,
       },
     },
   ];

@@ -20306,7 +20306,7 @@ function parseProductionVersion(value) {
     const parse = value.match(regex);
     if (!parse)
         return null;
-    const markdown = `\`\`\`// npm\nnpm install ${parse}\n\n// yarn\nyarn add ${parse}\`\`\``;
+    const markdown = `\`\`\`// npm\nnpm install ${parse[0]}\n\n// yarn\nyarn add ${parse[0]}\`\`\``;
     return markdown;
 }
 exports.parseProductionVersion = parseProductionVersion;
@@ -20354,7 +20354,7 @@ function sendCanaryPublishMessage(planeText) {
 exports.sendCanaryPublishMessage = sendCanaryPublishMessage;
 function sendProductionPublishMessage(planeText) {
     return (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
-        const header = ":sparkles: 다음을 통해 설치:\n";
+        const header = ":fire: 운영 배포가 되었어요!\n";
         const content = (0, parseDesignSystemVersion_1.parseProductionVersion)(planeText);
         console.log("content", content);
         const blocks = [
@@ -20362,7 +20362,7 @@ function sendProductionPublishMessage(planeText) {
                 type: "section",
                 text: {
                     type: "mrkdwn",
-                    text: `*${header + "\n" + content + "\n"}  :fire: 운영 배포가 되었어요!`,
+                    text: `*${header + "\n" + content}`,
                 },
             },
         ];

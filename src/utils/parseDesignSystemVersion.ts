@@ -31,7 +31,7 @@ export function parseProductionVersion(value: string) {
 
   if (!parse) return null;
 
-  const markdown = `\`\`\`// npm\nnpm install ${parse}\n\n// yarn\nyarn add ${parse}\`\`\``;
+  const markdown = `\`\`\`// npm\nnpm install ${parse[0]}\n\n// yarn\nyarn add ${parse[0]}\`\`\``;
 
   return markdown;
 }
