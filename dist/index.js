@@ -20230,7 +20230,7 @@ function hasPlaneText() {
 function parseGithubEvent() {
     if (isReadyCanaryBuild()) {
         return {
-            type: github_1.ActionEventName.디자인시스템운영,
+            type: github_1.ActionEventName.디자인시스템카나리,
         };
     }
     else if (isReadyProductionBuild()) {

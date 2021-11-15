@@ -31,7 +31,7 @@ function hasPlaneText() {
 export function parseGithubEvent() {
   if (isReadyCanaryBuild()) {
     return {
-      type: ActionEventName.디자인시스템운영,
+      type: ActionEventName.디자인시스템카나리,
     };
   } else if (isReadyProductionBuild()) {
     return {
