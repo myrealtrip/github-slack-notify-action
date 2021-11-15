@@ -20702,8 +20702,8 @@ function main() {
                 break;
             }
             case github_1.ActionEventName.디자인시스템운영: {
-                core.info("카나리 배포가 되었습니다, 슬랙 메세지를 보냅니다.");
-                yield (0, slack_1.sendCanaryPublishMessage)(planeText);
+                core.info("운영 배포가 되었습니다, 슬랙 메세지를 보냅니다.");
+                yield (0, slack_1.sendProductionPublishMessage)(planeText);
                 break;
             }
             case github_1.ActionEventName.PR승인: {

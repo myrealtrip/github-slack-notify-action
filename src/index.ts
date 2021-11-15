@@ -1,6 +1,10 @@
 import * as core from "@actions/core";
 import * as github from "@actions/github";
-import { sendCanaryPublishMessage, sendPlaneTextMessage } from "./utils/slack";
+import {
+  sendCanaryPublishMessage,
+  sendPlaneTextMessage,
+  sendProductionPublishMessage,
+} from "./utils/slack";
 import { parseGithubEvent } from "./utils/github/events";
 import { ActionEventName } from "./models/github";
 import { PLANE_TEXT } from "./utils/input";
@@ -29,8 +33,8 @@ async function main() {
       break;
     }
     case ActionEventName.디자인시스템운영: {
-      core.info("카나리 배포가 되었습니다, 슬랙 메세지를 보냅니다.");
-      await sendCanaryPublishMessage(planeText);
+      core.info("운영 배포가 되었습니다, 슬랙 메세지를 보냅니다.");
+      await sendProductionPublishMessage(planeText);
       break;
     }
     case ActionEventName.PR승인: {
