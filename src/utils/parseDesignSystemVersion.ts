@@ -1,5 +1,9 @@
 const PACKAGE_NAME = "@myrealtrip/design-system";
 
+function createInstallVersion(value: string) {
+  return `\`\`\`// npm\nnpm install ${value}\n\n// yarn\nyarn add ${value}\`\`\``;
+}
+
 function findStringLastIndex(string: string, match: string) {
   return string.indexOf(match) + match.length;
 }
@@ -20,7 +24,7 @@ export function parseCanaryVersion(value: string) {
 
   const version = versionNote.substr(startIndex, endIndex).replace(" Done", "");
 
-  const markdown = `\`\`\`// npm\nnpm install ${PACKAGE_NAME}@${version}\n\n// yarn\nyarn add ${PACKAGE_NAME}@${version}\`\`\``;
+  const markdown = createInstallVersion(`${PACKAGE_NAME}@${version}`);
 
   return markdown;
 }
@@ -30,8 +34,7 @@ export function parseProductionVersion(value: string) {
   const parse = value.match(regex);
 
   if (!parse) return null;
-
-  const markdown = `\`\`\`// npm\nnpm install ${parse[0]}\n\n// yarn\nyarn add ${parse[0]}\`\`\``;
+  const markdown = createInstallVersion(parse[0]);
 
   return markdown;
 }
