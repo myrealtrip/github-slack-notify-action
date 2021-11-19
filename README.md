@@ -68,7 +68,7 @@ jobs:
 | `slack-bot-token` | 메세지를 보낼 슬랙봇 토큰.                                          | 필수 |
 | `github-token`    | Github Personal Access Token. `repo` 스코프를 지정해서 생성해주세요 | 필수 |
 | `channel-id`      | 노티를 쏘고 싶은 슬랙 채널 ID                                       | 필수 |
-| `build-type`      | canary (커스텀 해서 추가 가능)                                      | 선택 |
+| `build-type`      | JS로 커스텀한 메세지 보낼 때(문자열 파싱 등등, 개발 후 버전 업 필요)
 | `plane-text`      | 슬랙 채널에 보낼 평문 메세지(마크다운 작성 가능)                    | 선택 |
 
 ## 🚀 Deployment <a name = "deployment"></a>
