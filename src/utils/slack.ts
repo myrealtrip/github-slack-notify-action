@@ -4,6 +4,7 @@ import {
   parseCanaryVersion,
   parseProductionVersion,
 } from "./parseDesignSystemVersion";
+import parseNewline from "./parseNewline";
 
 const slackClient = new WebClient(SLACK_BOT_TOKEN);
 
@@ -69,7 +70,7 @@ export async function sendPlaneTextMessage({
       type: "section",
       text: {
         type: "mrkdwn",
-        text: `${planeText}`,
+        text: `${parseNewline(planeText)}`,
       },
     },
   ];

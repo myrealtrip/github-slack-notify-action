@@ -20281,6 +20281,9 @@ exports.GITHUB_TOKEN = core.getInput("github-token");
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.parseProductionVersion = exports.parseCanaryVersion = void 0;
 const PACKAGE_NAME = "@myrealtrip/design-system";
+function createInstallVersion(value) {
+    return `\`\`\`// npm\nnpm install ${value}\n\n// yarn\nyarn add ${value}\`\`\``;
+}
 function findStringLastIndex(string, match) {
     return string.indexOf(match) + match.length;
 }
@@ -20297,7 +20300,7 @@ function parseCanaryVersion(value) {
     const startIndex = findStringLastIndex(versionNote, matchString.start);
     const endIndex = findStringLastIndex(versionNote, matchString.end);
     const version = versionNote.substr(startIndex, endIndex).replace(" Done", "");
-    const markdown = `\`\`\`// npm\nnpm install ${PACKAGE_NAME}@${version}\n\n// yarn\nyarn add ${PACKAGE_NAME}@${version}\`\`\``;
+    const markdown = createInstallVersion(`${PACKAGE_NAME}@${version}`);
     return markdown;
 }
 exports.parseCanaryVersion = parseCanaryVersion;
@@ -20306,10 +20309,25 @@ function parseProductionVersion(value) {
     const parse = value.match(regex);
     if (!parse)
         return null;
-    const markdown = `\`\`\`// npm\nnpm install ${parse[0]}\n\n// yarn\nyarn add ${parse[0]}\`\`\``;
+    const markdown = createInstallVersion(parse[0]);
     return markdown;
 }
 exports.parseProductionVersion = parseProductionVersion;
+
+
+/***/ }),
+
+/***/ 2818:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const parseNewline = (value) => {
+    const parse = value.replace(/\\n/gi, "\n");
+    return parse;
+};
+exports.default = parseNewline;
 
 
 /***/ }),
@@ -20325,6 +20343,7 @@ const tslib_1 = __nccwpck_require__(4351);
 const web_api_1 = __nccwpck_require__(431);
 const input_1 = __nccwpck_require__(5073);
 const parseDesignSystemVersion_1 = __nccwpck_require__(61);
+const parseNewline_1 = (0, tslib_1.__importDefault)(__nccwpck_require__(2818));
 const slackClient = new web_api_1.WebClient(input_1.SLACK_BOT_TOKEN);
 function sendMessage(args) {
     return slackClient.chat.postMessage(args);
@@ -20381,7 +20400,7 @@ function sendPlaneTextMessage({ planeText, }) {
                 type: "section",
                 text: {
                     type: "mrkdwn",
-                    text: `${planeText}`,
+                    text: `${(0, parseNewline_1.default)(planeText)}`,
                 },
             },
         ];
