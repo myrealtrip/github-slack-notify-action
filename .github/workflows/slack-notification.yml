@@ -10,7 +10,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@master
       - name: Fire Notification
-        uses: myrealtrip/github-slack-boy@v1.8.0
+        uses: myrealtrip/github-slack-boy@v1.8.2
         with:
           slack-bot-token: ${{ secrets.SLACK_BOT_TOKEN }}
           github-token: ${{ secrets.GH_TOKEN }}
