@@ -10,7 +10,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@master
       - name: Fire Notification
-        uses: myrealtrip/github-slack-notify-action@v1.8.7
+        uses: myrealtrip/github-slack-notify-action@v1.8.10
         with:
           plane-text: 테스트 메세지입니다.
           slack-bot-token: ${{ secrets.SLACK_BOT_TOKEN }}
