@@ -31,14 +31,14 @@ export async function sendCanaryPublishMessage(planeText: string) {
   const header = ":sparkles: 다음을 통해 로컬 테스트:\n";
 
   const content = parseCanaryVersion(planeText);
-  console.log("content", content);
+  const mention = await createSlackMention(ACTION_OWNER);
 
   const blocks = [
     {
       type: "section",
       text: {
         type: "mrkdwn",
-        text: `*${
+        text: `${mention ?? ""}\n*${
           header + "\n" + content + "\n"
         }  :point_right: 카나리 배포가 되었어요!`,
       },
@@ -54,16 +54,15 @@ export async function sendCanaryPublishMessage(planeText: string) {
 
 export async function sendProductionPublishMessage(planeText: string) {
   const header = ":fire: 운영 배포가 되었어요!\n";
-
+  const mention = await createSlackMention(ACTION_OWNER);
   const content = parseProductionVersion(planeText);
-  console.log("content", content);
 
   const blocks = [
     {
       type: "section",
       text: {
         type: "mrkdwn",
-        text: `*${header + "\n" + content}`,
+        text: `*${mention ?? ""}\n${header + "\n" + content}`,
       },
     },
   ];
@@ -80,35 +79,14 @@ export async function sendPlaneTextMessage({
 }: {
   planeText: string;
 }) {
-  const blocks = [
-    {
-      type: "section",
-      text: {
-        type: "mrkdwn",
-        text: `${parseNewline(planeText)}`,
-      },
-    },
-  ];
-
-  return sendMessage({
-    channel: TARGET_SLACK_CHANNEL_ID,
-    text: "",
-    blocks,
-  });
-}
-
-export async function sendMentionUsernameWithMessage({
-  planeText,
-}: {
-  planeText: string;
-}) {
   const mention = await createSlackMention(ACTION_OWNER);
+
   const blocks = [
     {
       type: "section",
       text: {
         type: "mrkdwn",
-        text: `${mention}\n${parseNewline(planeText)}`,
+        text: `${mention ?? ""}\n${parseNewline(planeText)}`,
       },
     },
   ];

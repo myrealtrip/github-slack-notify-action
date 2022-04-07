@@ -20261,7 +20261,7 @@ exports.parseGithubEvent = parseGithubEvent;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.GITHUB_TOKEN = exports.TARGET_SLACK_CHANNEL_ID = exports.SLACK_BOT_TOKEN = exports.PLANE_TEXT = exports.BUILD_TYPE = void 0;
+exports.ACTION_OWNER = exports.USER_INFO_URL = exports.GITHUB_TOKEN = exports.TARGET_SLACK_CHANNEL_ID = exports.SLACK_BOT_TOKEN = exports.PLANE_TEXT = exports.BUILD_TYPE = void 0;
 const tslib_1 = __nccwpck_require__(4351);
 const core = (0, tslib_1.__importStar)(__nccwpck_require__(2186));
 exports.BUILD_TYPE = core.getInput("build-type");
@@ -20269,6 +20269,9 @@ exports.PLANE_TEXT = core.getInput("plane-text");
 exports.SLACK_BOT_TOKEN = core.getInput("slack-bot-token");
 exports.TARGET_SLACK_CHANNEL_ID = core.getInput("channel-id");
 exports.GITHUB_TOKEN = core.getInput("github-token");
+// USER_INFO_URL 와 ACTION_OWNER 는 함께 사용해야한다.
+exports.USER_INFO_URL = core.getInput("user-info-url");
+exports.ACTION_OWNER = core.getInput("action-owner");
 
 
 /***/ }),
@@ -20338,13 +20341,23 @@ exports.default = parseNewline;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.sendPlaneTextMessage = exports.sendProductionPublishMessage = exports.sendCanaryPublishMessage = exports.sendMessage = void 0;
+exports.sendPlaneTextMessage = exports.sendProductionPublishMessage = exports.sendCanaryPublishMessage = exports.sendMessage = exports.createSlackMention = void 0;
 const tslib_1 = __nccwpck_require__(4351);
 const web_api_1 = __nccwpck_require__(431);
 const input_1 = __nccwpck_require__(5073);
 const parseDesignSystemVersion_1 = __nccwpck_require__(61);
 const parseNewline_1 = (0, tslib_1.__importDefault)(__nccwpck_require__(2818));
+const users_1 = __nccwpck_require__(6583);
 const slackClient = new web_api_1.WebClient(input_1.SLACK_BOT_TOKEN);
+function createSlackMention(author) {
+    var _a;
+    return (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
+        const developers = yield (0, users_1.fetchDevelopers)();
+        const actionAuthor = developers.find(({ githubUsername }) => githubUsername === author);
+        return `<@${(_a = actionAuthor === null || actionAuthor === void 0 ? void 0 : actionAuthor.slackId) !== null && _a !== void 0 ? _a : "NotFound"}>`;
+    });
+}
+exports.createSlackMention = createSlackMention;
 function sendMessage(args) {
     return slackClient.chat.postMessage(args);
 }
@@ -20353,13 +20366,13 @@ function sendCanaryPublishMessage(planeText) {
     return (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
         const header = ":sparkles: 다음을 통해 로컬 테스트:\n";
         const content = (0, parseDesignSystemVersion_1.parseCanaryVersion)(planeText);
-        console.log("content", content);
+        const mention = yield createSlackMention(input_1.ACTION_OWNER);
         const blocks = [
             {
                 type: "section",
                 text: {
                     type: "mrkdwn",
-                    text: `*${header + "\n" + content + "\n"}  :point_right: 카나리 배포가 되었어요!`,
+                    text: `${mention !== null && mention !== void 0 ? mention : ""}\n*${header + "\n" + content + "\n"}  :point_right: 카나리 배포가 되었어요!`,
                 },
             },
         ];
@@ -20374,14 +20387,14 @@ exports.sendCanaryPublishMessage = sendCanaryPublishMessage;
 function sendProductionPublishMessage(planeText) {
     return (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
         const header = ":fire: 운영 배포가 되었어요!\n";
+        const mention = yield createSlackMention(input_1.ACTION_OWNER);
         const content = (0, parseDesignSystemVersion_1.parseProductionVersion)(planeText);
-        console.log("content", content);
         const blocks = [
             {
                 type: "section",
                 text: {
                     type: "mrkdwn",
-                    text: `*${header + "\n" + content}`,
+                    text: `*${mention !== null && mention !== void 0 ? mention : ""}\n${header + "\n" + content}`,
                 },
             },
         ];
@@ -20395,12 +20408,13 @@ function sendProductionPublishMessage(planeText) {
 exports.sendProductionPublishMessage = sendProductionPublishMessage;
 function sendPlaneTextMessage({ planeText, }) {
     return (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
+        const mention = yield createSlackMention(input_1.ACTION_OWNER);
         const blocks = [
             {
                 type: "section",
                 text: {
                     type: "mrkdwn",
-                    text: `${(0, parseNewline_1.default)(planeText)}`,
+                    text: `${mention !== null && mention !== void 0 ? mention : ""}\n${(0, parseNewline_1.default)(planeText)}`,
                 },
             },
         ];
@@ -20412,6 +20426,26 @@ function sendPlaneTextMessage({ planeText, }) {
     });
 }
 exports.sendPlaneTextMessage = sendPlaneTextMessage;
+
+
+/***/ }),
+
+/***/ 6583:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.fetchDevelopers = void 0;
+const tslib_1 = __nccwpck_require__(4351);
+const input_1 = __nccwpck_require__(5073);
+function fetchDevelopers() {
+    return (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
+        const response = yield fetch(input_1.USER_INFO_URL);
+        return (yield response.json());
+    });
+}
+exports.fetchDevelopers = fetchDevelopers;
 
 
 /***/ }),
