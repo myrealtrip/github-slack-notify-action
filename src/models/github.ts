@@ -25,6 +25,7 @@ export enum ActionEventName {
   디자인시스템운영 = "DESIGN_SYSTEM_PRODUCTION",
   PR승인 = "APPROVED_PULL_REQUEST",
   입력 = "INPUT_PLANE_TEXT",
+  액션실행자 = "ACTION_OWNER",
 }
 
 export interface GithubActionEvent {

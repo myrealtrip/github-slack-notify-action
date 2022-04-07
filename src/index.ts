@@ -47,6 +47,11 @@ async function main() {
       await sendPlaneTextMessage({ planeText });
       break;
     }
+    case ActionEventName.액션실행자: {
+      core.info("액션에서 입력 값을 받았습니다.");
+      await sendPlaneTextMessage({ planeText });
+      break;
+    }
   }
 
   core.info("👋 Done!");
