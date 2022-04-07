@@ -7,7 +7,7 @@ import {
 } from "./utils/slack";
 import { parseGithubEvent } from "./utils/github/events";
 import { ActionEventName } from "./models/github";
-import { PLANE_TEXT } from "./utils/input";
+import { ACTION_OWNER, PLANE_TEXT } from "./utils/input";
 
 const { eventName, payload } = github.context;
 
@@ -17,6 +17,7 @@ async function main() {
   core.info("🔥 🔥 🔥 🔥 🔥");
   core.info(`action = ${payload.action}`);
   core.info("🔥 🔥 🔥 🔥 🔥");
+  core.info(ACTION_OWNER);
 
   const githubEvent = parseGithubEvent();
   const planeText = PLANE_TEXT;

@@ -12,6 +12,7 @@ jobs:
       - name: Fire Notification
         uses: myrealtrip/github-slack-notify-action@v1.8.2
         with:
+          plane-text: 테스트 메세지입니다.
           slack-bot-token: ${{ secrets.SLACK_BOT_TOKEN }}
           github-token: ${{ secrets.GH_TOKEN }}
           channel-id: ${{ secrets.CHNNAL_ID }}

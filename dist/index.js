@@ -20742,6 +20742,7 @@ function main() {
         core.info("🔥 🔥 🔥 🔥 🔥");
         core.info(`action = ${payload.action}`);
         core.info("🔥 🔥 🔥 🔥 🔥");
+        core.info(input_1.ACTION_OWNER);
         const githubEvent = (0, events_1.parseGithubEvent)();
         const planeText = input_1.PLANE_TEXT;
         if (!githubEvent) {
