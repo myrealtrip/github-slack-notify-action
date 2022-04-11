@@ -1,9 +1,5 @@
 import { ChatPostMessageArguments, WebClient } from "@slack/web-api";
-import {
-  ACTION_OWNER,
-  SLACK_BOT_TOKEN,
-  TARGET_SLACK_CHANNEL_ID,
-} from "./input";
+import { SLACK_BOT_TOKEN, TARGET_SLACK_CHANNEL_ID } from "./input";
 import {
   parseCanaryVersion,
   parseProductionVersion,
@@ -13,14 +9,12 @@ import { fetchDevelopers } from "./users";
 
 const slackClient = new WebClient(SLACK_BOT_TOKEN);
 
-export async function createSlackMention(author: string) {
-  const developers = await fetchDevelopers();
+async function createAuthorMessage() {
+  const author = await fetchDevelopers();
 
-  const actionAuthor = developers.find(
-    ({ githubUsername }) => githubUsername === author
-  );
+  if (!author) return "";
 
-  return `<@${actionAuthor?.slackId ?? "NotFound"}>`;
+  return `Author: ${author}\n`;
 }
 
 export function sendMessage(args: ChatPostMessageArguments) {
@@ -31,14 +25,14 @@ export async function sendCanaryPublishMessage(planeText: string) {
   const header = ":sparkles: 다음을 통해 로컬 테스트:\n";
 
   const content = parseCanaryVersion(planeText);
-  const mention = await createSlackMention(ACTION_OWNER);
+  const message = await createAuthorMessage();
 
   const blocks = [
     {
       type: "section",
       text: {
         type: "mrkdwn",
-        text: `${mention ?? ""}\n*${
+        text: `${message}*${
           header + "\n" + content + "\n"
         }  :point_right: 카나리 배포가 되었어요!`,
       },
@@ -54,7 +48,7 @@ export async function sendCanaryPublishMessage(planeText: string) {
 
 export async function sendProductionPublishMessage(planeText: string) {
   const header = ":fire: 운영 배포가 되었어요!\n";
-  const mention = await createSlackMention(ACTION_OWNER);
+  const message = await createAuthorMessage();
   const content = parseProductionVersion(planeText);
 
   const blocks = [
@@ -62,7 +56,7 @@ export async function sendProductionPublishMessage(planeText: string) {
       type: "section",
       text: {
         type: "mrkdwn",
-        text: `*${mention ?? ""}\n${header + "\n" + content}`,
+        text: `*${message ?? ""}\n${header + "\n" + content}`,
       },
     },
   ];
@@ -79,14 +73,14 @@ export async function sendPlaneTextMessage({
 }: {
   planeText: string;
 }) {
-  const mention = await createSlackMention(ACTION_OWNER);
+  const message = await createAuthorMessage();
 
   const blocks = [
     {
       type: "section",
       text: {
         type: "mrkdwn",
-        text: `${mention ?? ""}\n${parseNewline(planeText)}`,
+        text: `${message}${parseNewline(planeText)}`,
       },
     },
   ];
