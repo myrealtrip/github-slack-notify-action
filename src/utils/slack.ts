@@ -14,7 +14,7 @@ async function createAuthorMessage() {
 
   if (!author) return "";
 
-  return `Author: ${author}\n`;
+  return `Author: ${author}\n\n`;
 }
 
 export function sendMessage(args: ChatPostMessageArguments) {

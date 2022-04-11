@@ -22426,7 +22426,7 @@ function createAuthorMessage() {
         const author = yield (0, users_1.fetchDevelopers)();
         if (!author)
             return "";
-        return `Author: ${author}\n`;
+        return `Author: ${author}\n\n`;
     });
 }
 function sendMessage(args) {
