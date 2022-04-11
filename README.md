@@ -70,22 +70,13 @@ jobs:
 | `channel-id`      | 노티를 쏘고 싶은 슬랙 채널 ID                                                    | 선택 |
 | `build-type`      | `design_system_production`, `design_system_canary`                               | 선택 |
 | `plane-text`      | build-type 값 주지 않으면 슬랙 채널에 평문 메세지 전송합니다(마크다운 작성 가능) | 선택 |
-| `action-owner`    | github username 입력                                                             | 선택 |
-| `user-info-url`   | `action-owner` 값을 매핑 해둔 유저의 정보                                        | 선택 |
+| `action-owner`    | github username 값을 주면 깃허브 프로필 명이 포함 되어 전송 됩니다.              | 선택 |
 
-\* `action-owner` 와 `user-info-url` 값은 함께 등록 되어야합니다
+\* `action-owner` 값이 포함 되었을때 예시
 
-`user-info-url` 값으로 json 파일의 위치를 등록해주세요.
-
-```json
-[
-  {
-    "githubUsername": "zi-gae",
-    "slackId": "SLACK_USER_ID"
-  },
-  ...,
-  ...,
-]
+```
+Author: 정건우(Frontend)
+테스트 메세지입니다.
 ```
 
 ## 🚀 Deployment <a name = "deployment"></a>
@@ -141,6 +132,8 @@ jobs:
   ]
   ```
 
+````
+
 - master 브랜치의 최근 커밋을 타입을 따릅니다.
 - **yarn build** 를 통해 **dist** 파일과 함께 업스트림에 푸쉬 해주세요
 
@@ -160,3 +153,4 @@ jobs:
 ## ✍️ Authors <a name = "authors"></a>
 
 - [@myrealtrip](https://github.com/myrealtrip) - Idea & Initial work
+````

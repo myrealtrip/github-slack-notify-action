@@ -1,8 +1,14 @@
-import { User } from "models/user";
-import { USER_INFO_URL } from "./input";
-import fetch from "node-fetch";
+import { GITHUB_TOKEN, ACTION_OWNER } from "./input";
+import { Octokit } from "@octokit/core";
 
 export async function fetchDevelopers() {
-  const response = await fetch(USER_INFO_URL);
-  return (await response.json()) as User[];
+  const octokit = new Octokit({ auth: GITHUB_TOKEN });
+
+  const {
+    data: { name },
+  } = await octokit.request("GET /users/{username}", {
+    username: ACTION_OWNER,
+  });
+
+  return name ? `${name}` : null;
 }
