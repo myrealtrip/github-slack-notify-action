@@ -132,8 +132,6 @@ Author: 정건우(Frontend)
   ]
   ```
 
-````
-
 - master 브랜치의 최근 커밋을 타입을 따릅니다.
 - **yarn build** 를 통해 **dist** 파일과 함께 업스트림에 푸쉬 해주세요
 
@@ -153,4 +151,3 @@ Author: 정건우(Frontend)
 ## ✍️ Authors <a name = "authors"></a>
 
 - [@myrealtrip](https://github.com/myrealtrip) - Idea & Initial work
-````
