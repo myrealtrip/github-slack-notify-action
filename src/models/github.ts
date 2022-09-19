@@ -21,8 +21,8 @@ export interface Developer {
 }
 
 export enum ActionEventName {
-  디자인시스템카나리 = "DESIGN_SYSTEM_CANARY",
-  디자인시스템운영 = "DESIGN_SYSTEM_PRODUCTION",
+  카나리배포 = "CANARY_DEPLOY",
+  운영배포 = "PRODUCTION_DEPLOY",
   PR승인 = "APPROVED_PULL_REQUEST",
   입력 = "INPUT_PLANE_TEXT",
 }

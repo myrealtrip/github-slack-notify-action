@@ -3,7 +3,7 @@ import { SLACK_BOT_TOKEN, TARGET_SLACK_CHANNEL_ID } from "./input";
 import {
   parseCanaryVersion,
   parseProductionVersion,
-} from "./parseDesignSystemVersion";
+} from "./parseSharedRepositoryVersion";
 import parseNewline from "./parseNewline";
 import { fetchDevelopers } from "./users";
 
