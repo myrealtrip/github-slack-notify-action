@@ -22263,7 +22263,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.ActionEventName = void 0;
 var ActionEventName;
 (function (ActionEventName) {
-    ActionEventName["\uB514\uC790\uC778\uC2DC\uC2A4\uD15C\uCE74\uB098\uB9AC"] = "DESIGN_SYSTEM_CANARY";
+    ActionEventName["\uCE74\uB098\uB9AC\uBC30\uD3EC"] = "CANARY_DEPLOY";
     ActionEventName["\uB514\uC790\uC778\uC2DC\uC2A4\uD15C\uC6B4\uC601"] = "DESIGN_SYSTEM_PRODUCTION";
     ActionEventName["PR\uC2B9\uC778"] = "APPROVED_PULL_REQUEST";
     ActionEventName["\uC785\uB825"] = "INPUT_PLANE_TEXT";
@@ -22284,7 +22284,7 @@ const github = (0, tslib_1.__importStar)(__nccwpck_require__(5438));
 const github_1 = __nccwpck_require__(6962);
 const input_1 = __nccwpck_require__(5073);
 function isReadyCanaryBuild() {
-    const isReadyForCanary = input_1.BUILD_TYPE === "design_system_canary";
+    const isReadyForCanary = input_1.BUILD_TYPE === "design_system_canary" || input_1.BUILD_TYPE === "canary_deploy";
     return isReadyForCanary;
 }
 function isReadyProductionBuild() {
@@ -22304,7 +22304,7 @@ function hasPlaneText() {
 function parseGithubEvent() {
     if (isReadyCanaryBuild()) {
         return {
-            type: github_1.ActionEventName.디자인시스템카나리,
+            type: github_1.ActionEventName.카나리배포,
         };
     }
     else if (isReadyProductionBuild()) {
@@ -22357,34 +22357,57 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.parseProductionVersion = exports.parseCanaryVersion = void 0;
 const PACKAGE_NAME = "@myrealtrip/design-system";
 function createInstallVersion(value) {
-    return `\`\`\`// npm\nnpm install ${value}\n\n// yarn\nyarn add ${value}\`\`\``;
+    const npmVersion = value.map(version => `npm install ${version}`).join('\n');
+    const yarnVersion = value.map(version => `yarn add ${version}`).join('\n');
+    return `\`\`\`// npm\n${npmVersion}\n\n// yarn\n${yarnVersion}\`\`\``;
 }
+const regexKey = {
+    designSystem: 'designSystem',
+    frontendLibs: 'frontendLibs',
+};
+const regex = {
+    [regexKey.designSystem]: /Published.*?Done/s,
+    [regexKey.frontendLibs]: /Successfully published:/s,
+};
+const versionParseFunc = {
+    [regexKey.designSystem]: parseDesignSystemPackageVersion,
+    [regexKey.frontendLibs]: parseFrontendLibsPackageVersion,
+};
+function parseCanaryVersion(value) {
+    const [keyType] = Object.keys(regex).filter((key) => !!value.match(regex[key]));
+    const parse = value.match(regex[keyType]);
+    if (!parse)
+        return null;
+    const packageList = versionParseFunc[keyType](parse);
+    const markdown = createInstallVersion(packageList);
+    return markdown;
+}
+exports.parseCanaryVersion = parseCanaryVersion;
 function findStringLastIndex(string, match) {
     return string.indexOf(match) + match.length;
 }
-function parseCanaryVersion(value) {
-    const regex = /Published.*?Done/s;
-    const parse = value.match(regex);
-    if (!parse)
-        return null;
+function parseDesignSystemPackageVersion(regExpMatchArr) {
+    const versionNote = regExpMatchArr[0];
     const matchString = {
         start: "version: ",
         end: " Done",
     };
-    const versionNote = parse[0];
     const startIndex = findStringLastIndex(versionNote, matchString.start);
     const endIndex = findStringLastIndex(versionNote, matchString.end);
-    const version = versionNote.substr(startIndex, endIndex).replace(" Done", "");
-    const markdown = createInstallVersion(`${PACKAGE_NAME}@${version}`);
-    return markdown;
+    const version = versionNote.substring(startIndex, endIndex).replace(" Done", "");
+    return [`${PACKAGE_NAME}@${version}`];
 }
-exports.parseCanaryVersion = parseCanaryVersion;
+function parseFrontendLibsPackageVersion(regExpMatchArr) {
+    const versionNote = regExpMatchArr[0];
+    const titleIndex = regExpMatchArr.index;
+    return versionNote.slice(titleIndex).split(' - ').slice(1);
+}
 function parseProductionVersion(value) {
-    const regex = /@myrealtrip.*?([0-9]+).([0-9]+).([0-9]+)/s;
+    const regex = /@myrealtrip.*?(\d+).(\d+).(\d+)/s;
     const parse = value.match(regex);
     if (!parse)
         return null;
-    const markdown = createInstallVersion(parse[0]);
+    const markdown = createInstallVersion([parse[0]]);
     return markdown;
 }
 exports.parseProductionVersion = parseProductionVersion;
@@ -22421,79 +22444,71 @@ const parseDesignSystemVersion_1 = __nccwpck_require__(61);
 const parseNewline_1 = (0, tslib_1.__importDefault)(__nccwpck_require__(2818));
 const users_1 = __nccwpck_require__(6583);
 const slackClient = new web_api_1.WebClient(input_1.SLACK_BOT_TOKEN);
-function createAuthorMessage() {
-    return (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
-        const author = yield (0, users_1.fetchDevelopers)();
-        if (!author)
-            return "";
-        return `Author: ${author}\n\n`;
-    });
+async function createAuthorMessage() {
+    const author = await (0, users_1.fetchDevelopers)();
+    if (!author)
+        return "";
+    return `Author: ${author}\n\n`;
 }
 function sendMessage(args) {
     return slackClient.chat.postMessage(args);
 }
 exports.sendMessage = sendMessage;
-function sendCanaryPublishMessage(planeText) {
-    return (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
-        const header = ":sparkles: 다음을 통해 로컬 테스트:\n";
-        const content = (0, parseDesignSystemVersion_1.parseCanaryVersion)(planeText);
-        const message = yield createAuthorMessage();
-        const blocks = [
-            {
-                type: "section",
-                text: {
-                    type: "mrkdwn",
-                    text: `${message}*${header + "\n" + content + "\n"}  :point_right: 카나리 배포가 되었어요!`,
-                },
+async function sendCanaryPublishMessage(planeText) {
+    const header = ":sparkles: 다음을 통해 로컬 테스트:\n";
+    const content = (0, parseDesignSystemVersion_1.parseCanaryVersion)(planeText);
+    const message = await createAuthorMessage();
+    const blocks = [
+        {
+            type: "section",
+            text: {
+                type: "mrkdwn",
+                text: `${message}*${header + "\n" + content + "\n"}  :point_right: 카나리 배포가 되었어요!`,
             },
-        ];
-        return sendMessage({
-            channel: input_1.TARGET_SLACK_CHANNEL_ID,
-            text: "",
-            blocks,
-        });
+        },
+    ];
+    return sendMessage({
+        channel: input_1.TARGET_SLACK_CHANNEL_ID,
+        text: "",
+        blocks,
     });
 }
 exports.sendCanaryPublishMessage = sendCanaryPublishMessage;
-function sendProductionPublishMessage(planeText) {
-    return (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
-        const header = ":fire: 운영 배포가 되었어요!\n";
-        const message = yield createAuthorMessage();
-        const content = (0, parseDesignSystemVersion_1.parseProductionVersion)(planeText);
-        const blocks = [
-            {
-                type: "section",
-                text: {
-                    type: "mrkdwn",
-                    text: `*${message !== null && message !== void 0 ? message : ""}\n${header + "\n" + content}`,
-                },
+async function sendProductionPublishMessage(planeText) {
+    const header = ":fire: 운영 배포가 되었어요!\n";
+    const message = await createAuthorMessage();
+    const content = (0, parseDesignSystemVersion_1.parseProductionVersion)(planeText);
+    const blocks = [
+        {
+            type: "section",
+            text: {
+                type: "mrkdwn",
+                text: `*${message !== null && message !== void 0 ? message : ""}\n${header + "\n" + content}`,
             },
-        ];
-        return sendMessage({
-            channel: input_1.TARGET_SLACK_CHANNEL_ID,
-            text: "",
-            blocks,
-        });
+        },
+    ];
+    return sendMessage({
+        channel: input_1.TARGET_SLACK_CHANNEL_ID,
+        text: "",
+        blocks,
     });
 }
 exports.sendProductionPublishMessage = sendProductionPublishMessage;
-function sendPlaneTextMessage({ planeText, }) {
-    return (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
-        const message = yield createAuthorMessage();
-        const blocks = [
-            {
-                type: "section",
-                text: {
-                    type: "mrkdwn",
-                    text: `${message}${(0, parseNewline_1.default)(planeText)}`,
-                },
+async function sendPlaneTextMessage({ planeText, }) {
+    const message = await createAuthorMessage();
+    const blocks = [
+        {
+            type: "section",
+            text: {
+                type: "mrkdwn",
+                text: `${message}${(0, parseNewline_1.default)(planeText)}`,
             },
-        ];
-        return sendMessage({
-            channel: input_1.TARGET_SLACK_CHANNEL_ID,
-            text: "",
-            blocks,
-        });
+        },
+    ];
+    return sendMessage({
+        channel: input_1.TARGET_SLACK_CHANNEL_ID,
+        text: "",
+        blocks,
     });
 }
 exports.sendPlaneTextMessage = sendPlaneTextMessage;
@@ -22508,17 +22523,14 @@ exports.sendPlaneTextMessage = sendPlaneTextMessage;
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.fetchDevelopers = void 0;
-const tslib_1 = __nccwpck_require__(4351);
 const input_1 = __nccwpck_require__(5073);
 const core_1 = __nccwpck_require__(6762);
-function fetchDevelopers() {
-    return (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
-        const octokit = new core_1.Octokit({ auth: input_1.GITHUB_TOKEN });
-        const { data: { name }, } = yield octokit.request("GET /users/{username}", {
-            username: input_1.ACTION_OWNER,
-        });
-        return name ? `${name}` : null;
+async function fetchDevelopers() {
+    const octokit = new core_1.Octokit({ auth: input_1.GITHUB_TOKEN });
+    const { data: { name }, } = await octokit.request("GET /users/{username}", {
+        username: input_1.ACTION_OWNER,
     });
+    return name ? `${name}` : null;
 }
 exports.fetchDevelopers = fetchDevelopers;
 
@@ -22810,44 +22822,42 @@ const events_1 = __nccwpck_require__(4232);
 const github_1 = __nccwpck_require__(6962);
 const input_1 = __nccwpck_require__(5073);
 const { eventName, payload } = github.context;
-function main() {
-    return (0, tslib_1.__awaiter)(this, void 0, void 0, function* () {
-        core.info("🔥 Run.....");
-        core.info(`eventName = ${eventName}`);
-        core.info("🔥 🔥 🔥 🔥 🔥");
-        core.info(`action = ${payload.action}`);
-        core.info("🔥 🔥 🔥 🔥 🔥");
-        core.info(input_1.ACTION_OWNER);
-        const githubEvent = (0, events_1.parseGithubEvent)();
-        const planeText = input_1.PLANE_TEXT;
-        if (!githubEvent) {
-            core.info("👋 타입이 없습니다.");
-            return;
+async function main() {
+    core.info("🔥 Run.....");
+    core.info(`eventName = ${eventName}`);
+    core.info("🔥 🔥 🔥 🔥 🔥");
+    core.info(`action = ${payload.action}`);
+    core.info("🔥 🔥 🔥 🔥 🔥");
+    core.info(input_1.ACTION_OWNER);
+    const githubEvent = (0, events_1.parseGithubEvent)();
+    const planeText = input_1.PLANE_TEXT;
+    if (!githubEvent) {
+        core.info("👋 타입이 없습니다.");
+        return;
+    }
+    switch (githubEvent.type) {
+        case github_1.ActionEventName.카나리배포: {
+            core.info("카나리 배포가 되었습니다, 슬랙 메세지를 보냅니다.");
+            await (0, slack_1.sendCanaryPublishMessage)(planeText);
+            break;
         }
-        switch (githubEvent.type) {
-            case github_1.ActionEventName.디자인시스템카나리: {
-                core.info("카나리 배포가 되었습니다, 슬랙 메세지를 보냅니다.");
-                yield (0, slack_1.sendCanaryPublishMessage)(planeText);
-                break;
-            }
-            case github_1.ActionEventName.디자인시스템운영: {
-                core.info("운영 배포가 되었습니다, 슬랙 메세지를 보냅니다.");
-                yield (0, slack_1.sendProductionPublishMessage)(planeText);
-                break;
-            }
-            case github_1.ActionEventName.PR승인: {
-                core.info("Pull Request 승인이 감지되었습니다. 슬랙 메세지를 보냅니다.");
-                // await sendCanaryPublishMessage({ pullRequest });
-                break;
-            }
-            case github_1.ActionEventName.입력: {
-                core.info("액션에서 입력 값을 받았습니다.");
-                yield (0, slack_1.sendPlaneTextMessage)({ planeText });
-                break;
-            }
+        case github_1.ActionEventName.디자인시스템운영: {
+            core.info("운영 배포가 되었습니다, 슬랙 메세지를 보냅니다.");
+            await (0, slack_1.sendProductionPublishMessage)(planeText);
+            break;
         }
-        core.info("👋 Done!");
-    });
+        case github_1.ActionEventName.PR승인: {
+            core.info("Pull Request 승인이 감지되었습니다. 슬랙 메세지를 보냅니다.");
+            // await sendCanaryPublishMessage({ pullRequest });
+            break;
+        }
+        case github_1.ActionEventName.입력: {
+            core.info("액션에서 입력 값을 받았습니다.");
+            await (0, slack_1.sendPlaneTextMessage)({ planeText });
+            break;
+        }
+    }
+    core.info("👋 Done!");
 }
 try {
     main();
