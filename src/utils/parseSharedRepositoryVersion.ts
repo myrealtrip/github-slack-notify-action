@@ -1,4 +1,5 @@
 const PACKAGE_NAME = "@myrealtrip/design-system";
+const FRONTEND_LIBS_SLPIT_WORD = "packagestopublish:";
 
 function createInstallVersion(value: string[]) {
   const npmVersion = value.map(version => `npm install ${version}` ).join('\n');
@@ -16,7 +17,7 @@ type regexKeyType = typeof regexKey[keyof typeof regexKey];
 
 const regex = {
   [regexKey.designSystem]: /Published.*?Done/s,
-  [regexKey.frontendLibs]: /Successfully published:/s,
+  [regexKey.frontendLibs]: /packagestopublish:/s,
 }
 
 const versionParseFunc = {
@@ -28,12 +29,13 @@ export function parseCanaryVersion(value: string) {
   const [keyType] = (Object.keys(regex) as [regexKeyType]).filter((key) => !!value.match(regex[key]));
   const parse = value.match(regex[keyType]);
 
-  if (!parse) return null;
+  if (!parse || !versionParseFunc[keyType]) return null;
 
   const packageList = versionParseFunc[keyType](parse);
 
-  const markdown = createInstallVersion(packageList);
+  if (!packageList) return null;
 
+  const markdown = createInstallVersion(packageList);
   return markdown;
 }
 
@@ -57,9 +59,8 @@ function parseDesignSystemPackageVersion(regExpMatchArr: RegExpMatchArray) {
 }
 
 function parseFrontendLibsPackageVersion(regExpMatchArr: RegExpMatchArray) {
-  const versionNote = regExpMatchArr[0];
-  const titleIndex = regExpMatchArr.index;
-  return versionNote.slice(titleIndex).split(' - ').slice(1);
+  const versionNote = regExpMatchArr.input?.split(FRONTEND_LIBS_SLPIT_WORD)[1];
+  return versionNote?.split('-@myrealtrip').slice(1).map((item) => `@myrealtrip${item.split('+')[0].replace("=>", "@")}`);
 }
 
 export function parseProductionVersion(value: string) {
