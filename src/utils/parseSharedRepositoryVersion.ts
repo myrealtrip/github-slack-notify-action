@@ -16,8 +16,8 @@ const regexKey = {
 type regexKeyType = typeof regexKey[keyof typeof regexKey];
 
 const regex = {
-  [regexKey.designSystem]: /Published.*?Done/s,
-  [regexKey.frontendLibs]: /packagestopublish:/s,
+  [regexKey.designSystem]: new RegExp("Published.*?Done"),
+  [regexKey.frontendLibs]: new RegExp("packagestopublish:"),
 }
 
 const versionParseFunc = {
@@ -60,7 +60,7 @@ function parseDesignSystemPackageVersion(regExpMatchArr: RegExpMatchArray) {
 
 function parseFrontendLibsPackageVersion(regExpMatchArr: RegExpMatchArray) {
   const versionNote = regExpMatchArr.input?.split(FRONTEND_LIBS_SLPIT_WORD)[1];
-  return versionNote?.split('-@myrealtrip').slice(1).map((item) => `@myrealtrip${item.split('+')[0].replace("=>", "@")}`);
+  return versionNote?.split('-@myrealtrip').slice(1).map((item) => `@myrealtrip${item.split('+')[0].replace("=>", "@")}`) || [];
 }
 
 export function parseProductionVersion(value: string) {
