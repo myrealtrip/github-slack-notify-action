@@ -40,7 +40,7 @@ export function parseCanaryVersion(value: string) {
   const stringParser = getVersionParser(keyType);
   const packageList = stringParser?.(parse);
 
-  if (!packageList) return null;
+  if (!packageList?.length) return null;
 
   const markdown = createInstallVersion(packageList);
   return markdown;
