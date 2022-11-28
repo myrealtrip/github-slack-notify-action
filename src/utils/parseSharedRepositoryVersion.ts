@@ -38,9 +38,7 @@ export function parseCanaryVersion(value: string) {
   if (!parse?.index) return null;
 
   const stringParser = getVersionParser(keyType);
-
-  if(!stringParser) return null;
-  const packageList = stringParser(parse);
+  const packageList = stringParser?.(parse);
 
   if (!packageList) return null;
 
