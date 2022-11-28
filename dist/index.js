@@ -22530,10 +22530,15 @@ const input_1 = __nccwpck_require__(5073);
 const core_1 = __nccwpck_require__(6762);
 async function fetchDevelopers() {
     const octokit = new core_1.Octokit({ auth: input_1.GITHUB_TOKEN });
-    const { data: { name }, } = await octokit.request("GET /users/{username}", {
-        username: input_1.ACTION_OWNER,
-    });
-    return name ? `${name}` : null;
+    try {
+        const { data: { name }, } = await octokit.request("GET /users/{username}", {
+            username: input_1.ACTION_OWNER,
+        });
+        return name ? `${name}` : null;
+    }
+    catch (error) {
+        return null;
+    }
 }
 exports.fetchDevelopers = fetchDevelopers;
 
