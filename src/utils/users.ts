@@ -4,11 +4,14 @@ import { Octokit } from "@octokit/core";
 export async function fetchDevelopers() {
   const octokit = new Octokit({ auth: GITHUB_TOKEN });
 
-  const {
-    data: { name },
-  } = await octokit.request("GET /users/{username}", {
-    username: ACTION_OWNER,
-  });
-
-  return name ? `${name}` : null;
+  try {
+    const {
+      data: { name },
+    } = await octokit.request("GET /users/{username}", {
+      username: ACTION_OWNER,
+    });
+    return name ? `${name}` : null;
+  } catch(error) {
+    return null;
+  }
 }
