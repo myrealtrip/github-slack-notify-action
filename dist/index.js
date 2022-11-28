@@ -22264,7 +22264,7 @@ exports.ActionEventName = void 0;
 var ActionEventName;
 (function (ActionEventName) {
     ActionEventName["\uCE74\uB098\uB9AC\uBC30\uD3EC"] = "CANARY_DEPLOY";
-    ActionEventName["\uB514\uC790\uC778\uC2DC\uC2A4\uD15C\uC6B4\uC601"] = "DESIGN_SYSTEM_PRODUCTION";
+    ActionEventName["\uC6B4\uC601\uBC30\uD3EC"] = "PRODUCTION_DEPLOY";
     ActionEventName["PR\uC2B9\uC778"] = "APPROVED_PULL_REQUEST";
     ActionEventName["\uC785\uB825"] = "INPUT_PLANE_TEXT";
 })(ActionEventName = exports.ActionEventName || (exports.ActionEventName = {}));
@@ -22288,7 +22288,7 @@ function isReadyCanaryBuild() {
     return isReadyForCanary;
 }
 function isReadyProductionBuild() {
-    const isReadyForProduction = input_1.BUILD_TYPE === "design_system_production";
+    const isReadyForProduction = input_1.BUILD_TYPE === "design_system_production" || input_1.BUILD_TYPE === "frontend_lib_production";
     return isReadyForProduction;
 }
 function isApprovedCodeReview() {
@@ -22309,7 +22309,7 @@ function parseGithubEvent() {
     }
     else if (isReadyProductionBuild()) {
         return {
-            type: github_1.ActionEventName.디자인시스템운영,
+            type: github_1.ActionEventName.운영배포,
         };
     }
     else if (isApprovedCodeReview()) {
@@ -22348,14 +22348,30 @@ exports.ACTION_OWNER = core.getInput("action-owner");
 
 /***/ }),
 
-/***/ 61:
+/***/ 2818:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const parseNewline = (value) => {
+    const parse = value.replace(/\\n/gi, "\n");
+    return parse;
+};
+exports.default = parseNewline;
+
+
+/***/ }),
+
+/***/ 9439:
 /***/ ((__unused_webpack_module, exports) => {
 
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.parseProductionVersion = exports.parseCanaryVersion = void 0;
-const PACKAGE_NAME = "@myrealtrip/design-system";
+const DESIGNSYSTEM_PACKAGE_NAME = "@myrealtrip/design-system";
+const FRONTEND_LIBS_SLPIT_WORD = "packagestopublish:";
 function createInstallVersion(value) {
     const npmVersion = value.map(version => `npm install ${version}`).join('\n');
     const yarnVersion = value.map(version => `yarn add ${version}`).join('\n');
@@ -22367,7 +22383,7 @@ const regexKey = {
 };
 const regex = {
     [regexKey.designSystem]: /Published.*?Done/s,
-    [regexKey.frontendLibs]: /Successfully published:/s,
+    [regexKey.frontendLibs]: /packagestopublish:/s,
 };
 const versionParseFunc = {
     [regexKey.designSystem]: parseDesignSystemPackageVersion,
@@ -22376,9 +22392,11 @@ const versionParseFunc = {
 function parseCanaryVersion(value) {
     const [keyType] = Object.keys(regex).filter((key) => !!value.match(regex[key]));
     const parse = value.match(regex[keyType]);
-    if (!parse)
+    if (!(parse === null || parse === void 0 ? void 0 : parse.index))
         return null;
     const packageList = versionParseFunc[keyType](parse);
+    if (!packageList.length)
+        return null;
     const markdown = createInstallVersion(packageList);
     return markdown;
 }
@@ -22395,37 +22413,22 @@ function parseDesignSystemPackageVersion(regExpMatchArr) {
     const startIndex = findStringLastIndex(versionNote, matchString.start);
     const endIndex = findStringLastIndex(versionNote, matchString.end);
     const version = versionNote.substring(startIndex, endIndex).replace(" Done", "");
-    return [`${PACKAGE_NAME}@${version}`];
+    return [`${DESIGNSYSTEM_PACKAGE_NAME}@${version}`];
 }
 function parseFrontendLibsPackageVersion(regExpMatchArr) {
-    const versionNote = regExpMatchArr[0];
-    const titleIndex = regExpMatchArr.index;
-    return versionNote.slice(titleIndex).split(' - ').slice(1);
+    var _a;
+    const versionNote = (_a = regExpMatchArr.input) === null || _a === void 0 ? void 0 : _a.split(FRONTEND_LIBS_SLPIT_WORD)[1];
+    return (versionNote === null || versionNote === void 0 ? void 0 : versionNote.split('-@myrealtrip').slice(1).map((item) => `@myrealtrip${item.split('+')[0].replace("=>", "@")}`)) || [];
 }
 function parseProductionVersion(value) {
-    const regex = /@myrealtrip.*?(\d+).(\d+).(\d+)/s;
-    const parse = value.match(regex);
-    if (!parse)
+    const regex = /@myrealtrip.*?(\d+).(\d+).(\d+)/gs;
+    const parsedPackageList = value.match(regex);
+    if (!parsedPackageList)
         return null;
-    const markdown = createInstallVersion([parse[0]]);
+    const markdown = createInstallVersion(parsedPackageList);
     return markdown;
 }
 exports.parseProductionVersion = parseProductionVersion;
-
-
-/***/ }),
-
-/***/ 2818:
-/***/ ((__unused_webpack_module, exports) => {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-const parseNewline = (value) => {
-    const parse = value.replace(/\\n/gi, "\n");
-    return parse;
-};
-exports.default = parseNewline;
 
 
 /***/ }),
@@ -22440,7 +22443,7 @@ exports.sendPlaneTextMessage = exports.sendProductionPublishMessage = exports.se
 const tslib_1 = __nccwpck_require__(4351);
 const web_api_1 = __nccwpck_require__(431);
 const input_1 = __nccwpck_require__(5073);
-const parseDesignSystemVersion_1 = __nccwpck_require__(61);
+const parseSharedRepositoryVersion_1 = __nccwpck_require__(9439);
 const parseNewline_1 = (0, tslib_1.__importDefault)(__nccwpck_require__(2818));
 const users_1 = __nccwpck_require__(6583);
 const slackClient = new web_api_1.WebClient(input_1.SLACK_BOT_TOKEN);
@@ -22456,7 +22459,7 @@ function sendMessage(args) {
 exports.sendMessage = sendMessage;
 async function sendCanaryPublishMessage(planeText) {
     const header = ":sparkles: 다음을 통해 로컬 테스트:\n";
-    const content = (0, parseDesignSystemVersion_1.parseCanaryVersion)(planeText);
+    const content = (0, parseSharedRepositoryVersion_1.parseCanaryVersion)(planeText);
     const message = await createAuthorMessage();
     const blocks = [
         {
@@ -22477,7 +22480,7 @@ exports.sendCanaryPublishMessage = sendCanaryPublishMessage;
 async function sendProductionPublishMessage(planeText) {
     const header = ":fire: 운영 배포가 되었어요!\n";
     const message = await createAuthorMessage();
-    const content = (0, parseDesignSystemVersion_1.parseProductionVersion)(planeText);
+    const content = (0, parseSharedRepositoryVersion_1.parseProductionVersion)(planeText);
     const blocks = [
         {
             type: "section",
@@ -22841,7 +22844,7 @@ async function main() {
             await (0, slack_1.sendCanaryPublishMessage)(planeText);
             break;
         }
-        case github_1.ActionEventName.디자인시스템운영: {
+        case github_1.ActionEventName.운영배포: {
             core.info("운영 배포가 되었습니다, 슬랙 메세지를 보냅니다.");
             await (0, slack_1.sendProductionPublishMessage)(planeText);
             break;
