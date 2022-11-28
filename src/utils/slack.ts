@@ -27,6 +27,8 @@ export async function sendCanaryPublishMessage(planeText: string) {
   const content = parseCanaryVersion(planeText);
   const message = await createAuthorMessage();
 
+  if(!content) return;
+
   const blocks = [
     {
       type: "section",
