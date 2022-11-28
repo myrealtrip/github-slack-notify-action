@@ -20,27 +20,14 @@ const regex = {
   [regexKey.frontendLibs]: new RegExp("packagestopublish:"),
 }
 
-const getVersionParser = (key: regexKeyType) => {
-  switch (key) {
-    case regexKey.designSystem:
-      return parseDesignSystemPackageVersion;
-    case regexKey.frontendLibs:
-      return parseDesignSystemPackageVersion;
-    default:
-      return null;
-  }
-}
-
 export function parseCanaryVersion(value: string) {
   const [keyType] = (Object.keys(regex) as [regexKeyType]).filter((key) => !!value.match(regex[key]));
   const parse = value.match(regex[keyType]);
 
   if (!parse?.index) return null;
 
-  const stringParser = getVersionParser(keyType);
-  const packageList = stringParser?.(parse);
-
-  if (!packageList?.length) return null;
+  const packageList = (versionParseFunc[keyType] as (regExpMatchArr: RegExpMatchArray) => string[])(parse);
+  if (!packageList.length) return null;
 
   const markdown = createInstallVersion(packageList);
   return markdown;
