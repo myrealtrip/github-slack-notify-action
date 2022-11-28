@@ -29,7 +29,7 @@ export function parseCanaryVersion(value: string) {
   const [keyType] = (Object.keys(regex) as [regexKeyType]).filter((key) => !!value.match(regex[key]));
   const parse = value.match(regex[keyType]);
 
-  if (!parse?.index) return null;
+  if (!parse?.[0]) return null;
 
   const packageList = versionParseFunc[keyType](parse);
 

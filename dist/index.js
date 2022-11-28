@@ -22392,7 +22392,7 @@ const versionParseFunc = {
 function parseCanaryVersion(value) {
     const [keyType] = Object.keys(regex).filter((key) => !!value.match(regex[key]));
     const parse = value.match(regex[keyType]);
-    if (!(parse === null || parse === void 0 ? void 0 : parse.index))
+    if (!(parse === null || parse === void 0 ? void 0 : parse[0]))
         return null;
     const packageList = versionParseFunc[keyType](parse);
     if (!packageList.length)
@@ -22461,6 +22461,8 @@ async function sendCanaryPublishMessage(planeText) {
     const header = ":sparkles: 다음을 통해 로컬 테스트:\n";
     const content = (0, parseSharedRepositoryVersion_1.parseCanaryVersion)(planeText);
     const message = await createAuthorMessage();
+    if (!content)
+        return;
     const blocks = [
         {
             type: "section",
